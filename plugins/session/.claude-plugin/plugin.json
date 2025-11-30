@@ -8,12 +8,12 @@
     "url": "https://github.com/mrclrchtr"
   },
   "commands": [
-    "session-start",
-    "session-update",
-    "session-end",
-    "session-list",
-    "session-current",
-    "session-load",
-    "session-help"
+    "./commands/session-start.md",
+    "./commands/session-update.md",
+    "./commands/session-end.md",
+    "./commands/session-list.md",
+    "./commands/session-current.md",
+    "./commands/session-load.md",
+    "./commands/session-help.md"
   ]
 }
