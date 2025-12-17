@@ -1,7 +1,7 @@
 {
-  "name": "claude-code-plugins",
+  "name": "cc-marketplace",
   "description": "Personal Claude Code plugin marketplace",
-  "repository": "https://github.com/mrclrchtr/claude-code-plugins",
+  "repository": "https://github.com/mrclrchtr/cc-marketplace",
   "owner": {
     "name": "mrclrchtr",
     "url": "https://github.com/mrclrchtr"

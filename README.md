@@ -8,13 +8,13 @@ Add this marketplace to Claude Code:
 
 **From GitHub:**
 ```bash
-/plugin marketplace add https://github.com/mrclrchtr/claude-code-plugins
+/plugin marketplace add https://github.com/mrclrchtr/cc-marketplace
 ```
 
 Install plugins:
 
 ```bash
-/plugin install session@claude-code-plugins
+/plugin install session@cc-marketplace
 ```
 
 Restart Claude Code to activate plugins.
