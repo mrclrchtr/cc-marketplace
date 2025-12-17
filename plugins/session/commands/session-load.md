@@ -1,5 +1,8 @@
 # Load a session
 
+> CRITICAL: This command is READ-ONLY.
+> NEVER modify, edit, or update any session file content.
+
 ## Context
 
 - Sessions: @.sessions/
@@ -22,7 +25,7 @@ If it does not exist, STOP and prompt the user to specify a session name.
    - Prompt the user to choose from the list.
 3. If the session file **does** exist:
    - Update the current session pointer by writing the `$SESSION_NAME` filename to `.sessions/.current-session`.
-4. Load the session file content.
+4. Read the session file content.
 5. Check for running Background Bash Shells.
 
 ## Output

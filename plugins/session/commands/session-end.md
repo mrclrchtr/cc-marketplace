@@ -6,6 +6,8 @@ End the current development session by:
 
 # Task
 
+> CRITICAL: NEVER modify or edit existing session content - ONLY append!
+
 1. Check `.sessions/.current-session` for the active session
 2. If no active session, inform user there's nothing to end
 3. If session exists, append a comprehensive summary including:
