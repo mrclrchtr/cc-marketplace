@@ -11,10 +11,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 cc-marketplace/
 ├── plugins/           # Plugin implementations
-│   └── session/      # Session management plugin
+│   └── session/       # Session management plugin
 │       ├── .claude-plugin/
 │       │   └── plugin.json       # Plugin manifest
-│       └── commands/             # Slash commands (*.md)
+│       └── commands/             # Legacy commands (*.md)
 ├── docs/             # Documentation and patterns
 │   ├── command.md                # Slash command guide
 │   ├── context.md                # Context gathering patterns
@@ -33,8 +33,13 @@ Each plugin follows this structure:
 plugins/{plugin-name}/
 ├── .claude-plugin/
 │   └── plugin.json           # Required: Plugin manifest
-└── commands/                 # Slash command files
-    └── {command-name}.md     # Command implementation
+├── skills/                   # Skills (<skill-name>/SKILL.md)
+├── commands/                 # Legacy commands (*.md)
+├── agents/                   # Subagents (*.md)
+├── hooks/                    # Hook configs (hooks.json)
+├── .mcp.json                 # MCP servers (optional)
+├── .lsp.json                 # LSP servers (optional)
+└── scripts/                  # Hook/scripts (optional)
 ```
 
 ### Plugin Manifest Format
@@ -52,17 +57,49 @@ Location: `plugins/{name}/.claude-plugin/plugin.json`
   },
   "commands": [
     "./commands/command-name.md"
-  ]
+  ],
+  "skills": [
+    "./skills"
+  ],
+  "agents": "./agents",
+  "hooks": "./hooks/hooks.json",
+  "mcpServers": "./.mcp.json",
+  "lspServers": "./.lsp.json"
 }
 ```
 
-**Critical**: Command paths in `plugin.json` MUST be relative paths starting with `./commands/`
+**Critical**: All component paths in `plugin.json` must be relative to the plugin root and start with `./`.
+**Critical**: `commands/` is legacy; new work should prefer `skills/<name>/SKILL.md`.
 
-## Slash Command Development
+## Skills and Slash Commands
 
-Commands are markdown files in `plugins/{plugin-name}/commands/` directory.
+Skills are preferred for new work. A skill lives at `plugins/{plugin-name}/skills/<skill-name>/SKILL.md` and creates `/skill-name` (namespaced as `plugin-name:skill-name` when installed).
 
-### Command File Structure
+Legacy commands are markdown files in `plugins/{plugin-name}/commands/` and still work.
+
+### Skill File Structure (preferred)
+```markdown
+---
+name: skill-name                  # Optional; defaults to directory name
+argument-hint: [optional args]    # Shows in autocomplete
+description: Brief description     # Used for auto-invocation
+disable-model-invocation: true    # Optional: only user can invoke
+user-invocable: true              # Optional: hide from / menu when false
+context: fork                      # Optional: run in subagent context
+agent: Explore                     # Optional: subagent type when context=fork
+model: haiku|sonnet|opus           # Optional: Model selection
+allowed-tools: Read,Edit,Bash      # Optional: restrict tool access
+---
+
+# Context
+- Current time: !`date +%Y-%m-%d\ %I:%M\ %p`
+- Other context as needed
+
+# Task
+Handle $ARGUMENTS and perform specific actions.
+```
+
+### Legacy Command File Structure
 ```markdown
 ---
 argument-hint: [optional args]    # Shows in autocomplete
@@ -89,6 +126,10 @@ Handle $ARGUMENTS and perform specific actions.
 **Arguments:**
 - Use `$ARGUMENTS` to access user input
 - Example: `/command foo bar` → `$ARGUMENTS` = "foo bar"
+
+**Skill Invocation Controls:**
+- `disable-model-invocation: true` prevents auto-invocation (use for side effects)
+- `user-invocable: false` hides from `/` menu (background knowledge only)
 
 **Model Selection:**
 - `haiku` - Fast, simple tasks (status checks)
@@ -134,11 +175,12 @@ bat plugins/session/.claude-plugin/plugin.json
 ## Critical Rules
 
 ### Plugin Development
-1. **Plugin Manifest**: Command paths MUST use `./commands/` relative paths
-2. **Command Files**: Always include frontmatter with `description`
-3. **Bash Execution**: Commands using `!` MUST include `allowed-tools` with appropriate Bash patterns
-4. **State Files**: Session state files go in `.sessions/` (create if needed)
-5. **Namespacing**: Use descriptive command names like `session-start` not just `start`
+1. **Plugin Manifest**: Component paths MUST start with `./` and be relative to plugin root
+2. **Skills First**: New commands should be `skills/<name>/SKILL.md` (commands/ are legacy)
+3. **Skill Frontmatter**: Include `description`; add `disable-model-invocation: true` for side-effectful workflows
+4. **Bash Execution**: Commands/skills using `!` MUST include `allowed-tools` with appropriate Bash patterns
+5. **State Files**: Session state files go in `.sessions/` (create if needed)
+6. **Namespacing**: Use descriptive names like `session-start` not just `start`
 
 ### Documentation
 1. **Reference Docs**: Always check @docs/ for patterns before implementing
