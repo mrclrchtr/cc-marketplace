@@ -7,7 +7,7 @@ allowed-tools: Bash(date:*),Read,Write
 ---
 
 # Context
-- Date and Time: !`date +%Y-%m-%d\ %I:%M\ %p`
+- Date and Time: !`date -Idate -Ihours -Iminutes -Iseconds`
 
 # Task
 
