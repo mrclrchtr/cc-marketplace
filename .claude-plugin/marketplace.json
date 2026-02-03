@@ -11,6 +11,11 @@
       "name": "session",
       "source": "./plugins/session",
       "description": "Session management commands for Claude Code"
+    },
+    {
+      "name": "review",
+      "source": "./plugins/review",
+      "description": "Code review helpers for local/uncommitted changes"
     }
   ]
 }

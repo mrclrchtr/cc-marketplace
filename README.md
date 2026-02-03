@@ -15,6 +15,7 @@ Install plugins:
 
 ```bash
 /plugin install session@cc-marketplace
+/plugin install review@cc-marketplace
 ```
 
 Restart Claude Code to activate plugins.
@@ -25,13 +26,19 @@ Restart Claude Code to activate plugins.
 Session management system for documenting development work. Track progress, issues, solutions, and learnings in markdown files.
 
 **Commands:**
-- `/session-start [name]` - Start a new session
-- `/session-update [notes]` - Add notes to current session
-- `/session-end` - End session with summary
-- `/session-list` - List all sessions
-- `/session-current` - Show current session status
-- `/session-load` - Load a previous session
-- `/session-help` - Show help
+- `/session:session-start [name]` - Start a new session
+- `/session:session-update [notes]` - Add notes to current session
+- `/session:session-end` - End session with summary
+- `/session:session-list` - List all sessions
+- `/session:session-current` - Show current session status
+- `/session:session-load` - Load a previous session
+- `/session:session-help` - Show help
+
+### Review
+Critical review helpers for local/uncommitted changes.
+
+**Skills:**
+- `/review:uncommitted [path/glob]` - Review staged + unstaged + untracked changes before committing
 
 ## Documentation
 

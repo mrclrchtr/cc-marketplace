@@ -1,5 +1,12 @@
-# Context
+---
+name: session-start
+description: Start a new development session with optional name. Use when beginning significant work or wanting to track progress.
+argument-hint: [session-name]
+disable-model-invocation: true
+allowed-tools: Bash(date:*),Read,Write
+---
 
+# Context
 - Date and Time: !`date +%Y-%m-%d\ %I:%M\ %p`
 
 # Task
@@ -17,5 +24,5 @@ The session file should begin with:
 After creating the file, create or update `.sessions/.current-session` to track the active session filename.
 
 Confirm the session has started and remind the user they can:
-- Update it with `/project:session-update`
-- End it with `/project:session-end`
+- Update it with `/session:session-update`
+- End it with `/session:session-end`

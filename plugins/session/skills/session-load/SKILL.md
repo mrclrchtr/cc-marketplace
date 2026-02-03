@@ -1,3 +1,11 @@
+---
+name: session-load
+description: Load a previous session to review its content. Use when resuming work or reviewing past sessions.
+argument-hint: [session-name]
+disable-model-invocation: true
+allowed-tools: Read,Glob
+---
+
 # Load a session
 
 > CRITICAL: This command is READ-ONLY.
@@ -9,10 +17,10 @@
 
 ## Preflight
 
-- If `$ARGUMENT` is provided:
-Set `$SESSION_NAME` to `$ARGUMENT`, ensuring it is a valid session filename with `.md` extension.
+- If `$ARGUMENTS` is provided:
+Set `$SESSION_NAME` to `$ARGUMENTS`, ensuring it is a valid session filename with `.md` extension.
 
-- If `$ARGUMENT` is not provided
+- If `$ARGUMENTS` is not provided
 Set `$SESSION_NAME` to the current session name from `.sessions/.current-session`, if it exists.
 If it does not exist, STOP and prompt the user to specify a session name.
 

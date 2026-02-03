@@ -1,3 +1,12 @@
+---
+name: session-current
+description: Show the current active session status including duration and recent updates. Use when checking progress or session state.
+disable-model-invocation: true
+allowed-tools: Read
+---
+
+# Task
+
 Show the current session status by:
 
 1. Check if `.sessions/.current-session` exists

@@ -1,7 +1,11 @@
-End the current development session by:
+---
+name: session-end
+description: End the current session with comprehensive summary of work done. Use when completing significant work or stopping for the day.
+disable-model-invocation: true
+allowed-tools: Bash(date:*),Read,Write
+---
 
 # Context
-
 - Date and Time: !`date +%Y-%m-%d\ %I:%M\ %p`
 
 # Task

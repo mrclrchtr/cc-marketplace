@@ -1,3 +1,12 @@
+---
+name: session-list
+description: List all development sessions with their titles and dates. Use when reviewing past work or finding a specific session.
+disable-model-invocation: true
+allowed-tools: Read,Glob
+---
+
+# Task
+
 List all development sessions by:
 
 1. Check if `.sessions/` directory exists
