@@ -35,10 +35,13 @@ Session management system for documenting development work. Track progress, issu
 - `/session:session-help` - Show help
 
 ### Review
-Critical review helpers for local/uncommitted changes.
+Code review helpers for local changes.
 
 **Skills:**
 - `/review:uncommitted [path/glob]` - Review staged + unstaged + untracked changes before committing
+
+**Agents:**
+- `codex-reviewer` - Codex CLI-powered code review for branches, commits, or uncommitted changes (requires [Codex CLI](https://github.com/openai/codex))
 
 ## Documentation
 
