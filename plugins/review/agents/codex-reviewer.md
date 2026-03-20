@@ -13,9 +13,10 @@ description: >
   user: "Review my changes with codex"
   assistant: "I'll launch the codex-reviewer agent to review uncommitted changes."
   </example>
-model: inherit
+model: sonnet
 color: red
-tools: ["Bash", "Glob", "Grep", "Read"]
+tools: ["Bash", "Read"]
+effort: low
 memory: project
 ---
 

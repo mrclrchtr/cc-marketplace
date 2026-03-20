@@ -87,23 +87,34 @@ PROMPT
 fi
 
 # --- Write runner script ---
-# Runner runs inside tmux. Variables are expanded now (unquoted heredoc).
-# \$? and \$EXIT_CODE are escaped so they expand at runtime inside tmux.
+# Runner runs inside tmux. Quoted heredoc prevents shell injection —
+# all runtime values are passed via environment variables.
 RUNNER_SCRIPT=$(mktemp /tmp/codex-runner.XXXXXX)
-cat > "$RUNNER_SCRIPT" << RUNNER
+cat > "$RUNNER_SCRIPT" << 'RUNNER'
 #!/usr/bin/env bash
 set -o pipefail
-codex exec review $SCOPE_FLAG -m $MODEL -c model_reasoning_effort='"$REASONING"' --full-auto --prompt-file "$PROMPT_FILE" ${EXTRA_ARGS[*]+"${EXTRA_ARGS[*]}"} 2>&1 | tee "$REVIEW_OUTPUT"
-EXIT_CODE=\$?
-rm -f "$CLEANUP_PROMPT" "$RUNNER_SCRIPT"
-tmux wait-for -S "$SESSION_NAME"
-exit \$EXIT_CODE
+trap 'rm -f "$CODEX_CLEANUP_PROMPT" "$0"' EXIT
+# shellcheck disable=SC2086
+codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto --prompt-file "$CODEX_PROMPT_FILE" $CODEX_EXTRA_ARGS 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
+EXIT_CODE=$?
+tmux wait-for -S "$CODEX_SESSION_NAME"
+exit $EXIT_CODE
 RUNNER
 chmod +x "$RUNNER_SCRIPT"
 
 # --- Launch tmux session ---
-# set remain-on-exit atomically with session creation to avoid race condition
-tmux new-session -d -s "$SESSION_NAME" "$RUNNER_SCRIPT" \; \
+# Pass env vars into the tmux session, then start the runner.
+# set remain-on-exit atomically with session creation to avoid race condition.
+tmux new-session -d -s "$SESSION_NAME" \
+  -e CODEX_SCOPE="$SCOPE_FLAG" \
+  -e CODEX_MODEL="$MODEL" \
+  -e CODEX_REASONING="$REASONING" \
+  -e CODEX_PROMPT_FILE="$PROMPT_FILE" \
+  -e CODEX_REVIEW_OUTPUT="$REVIEW_OUTPUT" \
+  -e CODEX_SESSION_NAME="$SESSION_NAME" \
+  -e CODEX_CLEANUP_PROMPT="$CLEANUP_PROMPT" \
+  -e CODEX_EXTRA_ARGS="${EXTRA_ARGS[*]+${EXTRA_ARGS[*]}}" \
+  "$RUNNER_SCRIPT" \; \
   set-option -t "$SESSION_NAME" remain-on-exit on
 
 # --- Report ---

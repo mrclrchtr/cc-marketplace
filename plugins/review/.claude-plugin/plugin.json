@@ -1,6 +1,6 @@
 {
   "name": "review",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Code review helpers for local/uncommitted changes in Claude Code.",
   "repository": "https://github.com/mrclrchtr/cc-marketplace",
   "author": {
