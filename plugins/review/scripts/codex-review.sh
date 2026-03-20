@@ -61,8 +61,11 @@ if ! command -v tmux &>/dev/null; then
   exit 1
 fi
 
+# --- Capture working directory (git root preferred) ---
+WORK_DIR=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+
 # --- Generate session name and output path ---
-SESSION_NAME="codex-review-$(date +%s)"
+SESSION_NAME="codex-review-$(date +%s)-$$"
 REVIEW_OUTPUT=$(mktemp /tmp/codex-review.XXXXXX)
 CLEANUP_PROMPT=""
 
@@ -101,7 +104,7 @@ chmod +x "$RUNNER_SCRIPT"
 # --- Launch tmux session ---
 # Pass env vars into the tmux session, then start the runner.
 # set remain-on-exit atomically with session creation to avoid race condition.
-tmux new-session -d -s "$SESSION_NAME" \
+tmux new-session -d -s "$SESSION_NAME" -c "$WORK_DIR" \
   -e CODEX_SCOPE="$SCOPE_FLAG" \
   -e CODEX_MODEL="$MODEL" \
   -e CODEX_REASONING="$REASONING" \
