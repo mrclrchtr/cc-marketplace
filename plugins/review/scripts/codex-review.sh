@@ -9,8 +9,8 @@
 #                         Default: --uncommitted
 #   --model MODEL         Codex model. Default: gpt-5.3-codex
 #   --reasoning LEVEL     model_reasoning_effort value. Default: xhigh
-#   --prompt-file FILE    Custom prompt file (skips default prompt generation)
-#   --prompt TEXT          Inline prompt text (written to temp file)
+#   --prompt-file FILE    Custom prompt file (only used with --uncommitted scope)
+#   --prompt TEXT          Inline prompt text (only used with --uncommitted scope)
 #   --help                Show this help
 #
 # Output (on stdout):
@@ -94,8 +94,15 @@ cat > "$RUNNER_SCRIPT" << 'RUNNER'
 #!/usr/bin/env bash
 set -o pipefail
 trap 'rm -f "$CODEX_CLEANUP_PROMPT" "$0"' EXIT
+
+# Build the codex command. Prompt (via stdin) is only supported with --uncommitted;
+# --base and --commit reject a positional prompt argument.
 # shellcheck disable=SC2086
-codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto --prompt-file "$CODEX_PROMPT_FILE" $CODEX_EXTRA_ARGS 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
+if [[ "$CODEX_SCOPE" == "--uncommitted" && -s "$CODEX_PROMPT_FILE" ]]; then
+  codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto $CODEX_EXTRA_ARGS - < "$CODEX_PROMPT_FILE" 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
+else
+  codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto $CODEX_EXTRA_ARGS 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
+fi
 EXIT_CODE=$?
 tmux wait-for -S "$CODEX_SESSION_NAME"
 exit $EXIT_CODE

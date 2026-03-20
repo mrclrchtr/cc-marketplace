@@ -70,7 +70,7 @@ The plugin provides a launcher script at `${CLAUDE_PLUGIN_ROOT}/scripts/codex-re
 
 The script outputs `SESSION_NAME=...` and `REVIEW_OUTPUT=...` — capture these for later steps.
 
-**Custom prompt**: If the user provided specific focus areas, pass `--prompt "your custom prompt text"` or `--prompt-file /path/to/file`.
+**Custom prompt**: If the user provided specific focus areas **and** scope is `--uncommitted`, pass `--prompt "your custom prompt text"` or `--prompt-file /path/to/file`. Custom prompts are ignored for `--base` and `--commit` scopes (codex CLI limitation).
 
 **Extra codex args**: Pass anything after `--` directly to codex (e.g., `-- --some-flag`).
 
