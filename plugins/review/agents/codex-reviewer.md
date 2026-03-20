@@ -34,7 +34,7 @@ git diff --name-only            # unstaged
 git diff --stat                 # scope overview
 ```
 
-If no changes are detected, inform the user and ask what they'd like reviewed.
+If scope is `--uncommitted` and no changes are detected, inform the user and ask what they'd like reviewed. For `--base` and `--commit` scopes, a clean working tree is normal — proceed with the review.
 
 ## 2. Determine review scope and model
 

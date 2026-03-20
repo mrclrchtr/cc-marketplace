@@ -66,24 +66,13 @@ SESSION_NAME="codex-review-$(date +%s)"
 REVIEW_OUTPUT=$(mktemp /tmp/codex-review.XXXXXX)
 CLEANUP_PROMPT=""
 
-# --- Write prompt file if not provided ---
-if [[ -z "$PROMPT_FILE" ]]; then
+# --- Write prompt file only if user explicitly provided one ---
+# codex exec review has its own built-in review prompt; we only override
+# when the user passes --prompt or --prompt-file (and only for --uncommitted).
+if [[ -n "$CUSTOM_PROMPT" && -z "$PROMPT_FILE" ]]; then
   PROMPT_FILE=$(mktemp /tmp/codex-prompt.XXXXXX)
   CLEANUP_PROMPT="$PROMPT_FILE"
-
-  if [[ -n "$CUSTOM_PROMPT" ]]; then
-    printf '%s\n' "$CUSTOM_PROMPT" > "$PROMPT_FILE"
-  else
-    cat > "$PROMPT_FILE" << 'PROMPT'
-Review for: (1) correctness — logic errors, edge cases, off-by-one, race conditions;
-(2) security — injection, XSS, secrets in code, insecure patterns;
-(3) performance — N+1 queries, unnecessary allocations, algorithmic complexity;
-(4) error handling — missing try/catch, unhandled promises, silent failures;
-(5) code quality — naming, readability, DRY, SOLID principles;
-(6) testing — missing test coverage for new or changed code paths.
-Provide findings with file and line references.
-PROMPT
-  fi
+  printf '%s\n' "$CUSTOM_PROMPT" > "$PROMPT_FILE"
 fi
 
 # --- Write runner script ---
@@ -95,10 +84,10 @@ cat > "$RUNNER_SCRIPT" << 'RUNNER'
 set -o pipefail
 trap 'rm -f "$CODEX_CLEANUP_PROMPT" "$0"' EXIT
 
-# Build the codex command. Prompt (via stdin) is only supported with --uncommitted;
-# --base and --commit reject a positional prompt argument.
+# Build the codex command. Custom prompt (via stdin) is only supported with
+# --uncommitted; --base and --commit reject a positional prompt argument.
 # shellcheck disable=SC2086
-if [[ "$CODEX_SCOPE" == "--uncommitted" && -s "$CODEX_PROMPT_FILE" ]]; then
+if [[ "$CODEX_SCOPE" == "--uncommitted" && -n "$CODEX_PROMPT_FILE" && -s "$CODEX_PROMPT_FILE" ]]; then
   codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto $CODEX_EXTRA_ARGS - < "$CODEX_PROMPT_FILE" 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
 else
   codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto $CODEX_EXTRA_ARGS 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
