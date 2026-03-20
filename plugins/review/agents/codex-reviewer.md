@@ -29,12 +29,13 @@ You are an expert code review orchestrator that delegates reviews to Codex CLI v
 Only check what changed — do NOT read file contents:
 
 ```bash
-git diff --cached --name-only   # staged
-git diff --name-only            # unstaged
-git diff --stat                 # scope overview
+git diff --cached --name-only                   # staged
+git diff --name-only                            # unstaged
+git ls-files --others --exclude-standard        # untracked
+git diff --stat                                 # scope overview
 ```
 
-If scope is `--uncommitted` and no changes are detected, inform the user and ask what they'd like reviewed. For `--base` and `--commit` scopes, a clean working tree is normal — proceed with the review.
+If scope is `--uncommitted` and no changes are detected (no staged, unstaged, or untracked files), inform the user and ask what they'd like reviewed. For `--base` and `--commit` scopes, a clean working tree is normal — proceed with the review.
 
 ## 2. Determine review scope and model
 

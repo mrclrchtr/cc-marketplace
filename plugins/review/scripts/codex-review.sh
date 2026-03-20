@@ -69,31 +69,49 @@ SESSION_NAME="codex-review-$(date +%s)-$$"
 REVIEW_OUTPUT=$(mktemp /tmp/codex-review.XXXXXX)
 CLEANUP_PROMPT=""
 
-# --- Write prompt file only if user explicitly provided one ---
+# --- Validate / write prompt file ---
 # codex exec review has its own built-in review prompt; we only override
 # when the user passes --prompt or --prompt-file (and only for --uncommitted).
-if [[ -n "$CUSTOM_PROMPT" && -z "$PROMPT_FILE" ]]; then
+if [[ -n "$PROMPT_FILE" ]]; then
+  if [[ ! -r "$PROMPT_FILE" || ! -s "$PROMPT_FILE" ]]; then
+    echo "Error: prompt file not found, unreadable, or empty: $PROMPT_FILE" >&2
+    exit 1
+  fi
+elif [[ -n "$CUSTOM_PROMPT" ]]; then
   PROMPT_FILE=$(mktemp /tmp/codex-prompt.XXXXXX)
   CLEANUP_PROMPT="$PROMPT_FILE"
   printf '%s\n' "$CUSTOM_PROMPT" > "$PROMPT_FILE"
 fi
 
-# --- Write runner script ---
-# Runner runs inside tmux. Quoted heredoc prevents shell injection —
-# all runtime values are passed via environment variables.
+# --- Write extra args file (NUL-delimited to preserve argv boundaries) ---
+EXTRA_ARGS_FILE=""
+if [[ ${#EXTRA_ARGS[@]} -gt 0 ]]; then
+  EXTRA_ARGS_FILE=$(mktemp /tmp/codex-extra-args.XXXXXX)
+  printf '%s\0' "${EXTRA_ARGS[@]}" > "$EXTRA_ARGS_FILE"
+fi
+
+# --- Write runner script (quoted heredoc prevents shell injection) ---
 RUNNER_SCRIPT=$(mktemp /tmp/codex-runner.XXXXXX)
 cat > "$RUNNER_SCRIPT" << 'RUNNER'
 #!/usr/bin/env bash
 set -o pipefail
-trap 'rm -f "$CODEX_CLEANUP_PROMPT" "$0"' EXIT
+trap 'rm -f "$CODEX_CLEANUP_PROMPT" "$CODEX_EXTRA_ARGS_FILE" "$0"' EXIT
+
+# Reconstruct extra args array from NUL-delimited file
+EXTRA=()
+if [[ -n "$CODEX_EXTRA_ARGS_FILE" && -s "$CODEX_EXTRA_ARGS_FILE" ]]; then
+  while IFS= read -r -d '' arg; do
+    EXTRA+=("$arg")
+  done < "$CODEX_EXTRA_ARGS_FILE"
+fi
 
 # Build the codex command. Custom prompt (via stdin) is only supported with
 # --uncommitted; --base and --commit reject a positional prompt argument.
 # shellcheck disable=SC2086
 if [[ "$CODEX_SCOPE" == "--uncommitted" && -n "$CODEX_PROMPT_FILE" && -s "$CODEX_PROMPT_FILE" ]]; then
-  codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto $CODEX_EXTRA_ARGS - < "$CODEX_PROMPT_FILE" 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
+  codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto "${EXTRA[@]}" - < "$CODEX_PROMPT_FILE" 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
 else
-  codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto $CODEX_EXTRA_ARGS 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
+  codex exec review $CODEX_SCOPE -m "$CODEX_MODEL" -c model_reasoning_effort="\"$CODEX_REASONING\"" --full-auto "${EXTRA[@]}" 2>&1 | tee "$CODEX_REVIEW_OUTPUT"
 fi
 EXIT_CODE=$?
 tmux wait-for -S "$CODEX_SESSION_NAME"
@@ -112,7 +130,7 @@ tmux new-session -d -s "$SESSION_NAME" -c "$WORK_DIR" \
   -e CODEX_REVIEW_OUTPUT="$REVIEW_OUTPUT" \
   -e CODEX_SESSION_NAME="$SESSION_NAME" \
   -e CODEX_CLEANUP_PROMPT="$CLEANUP_PROMPT" \
-  -e CODEX_EXTRA_ARGS="${EXTRA_ARGS[*]+${EXTRA_ARGS[*]}}" \
+  -e CODEX_EXTRA_ARGS_FILE="$EXTRA_ARGS_FILE" \
   "$RUNNER_SCRIPT" \; \
   set-option -t "$SESSION_NAME" remain-on-exit on
 

@@ -1,6 +1,6 @@
 {
   "name": "review",
-  "version": "1.2.3",
+  "version": "1.3.0",
   "description": "Code review helpers for local/uncommitted changes in Claude Code.",
   "repository": "https://github.com/mrclrchtr/cc-marketplace",
   "author": {
@@ -8,5 +8,5 @@
     "url": "https://github.com/mrclrchtr"
   },
   "skills": "./skills",
-  "agents": ["./agents/codex-reviewer.md"]
+  "agents": "./agents"
 }
