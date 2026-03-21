@@ -61,7 +61,9 @@ Location: `plugins/{name}/.claude-plugin/plugin.json`
   "skills": [
     "./skills"
   ],
-  "agents": "./agents",
+  "agents": [
+    "./agents/agent-name.md"
+  ],
   "hooks": "./hooks/hooks.json",
   "mcpServers": "./.mcp.json",
   "lspServers": "./.lsp.json"

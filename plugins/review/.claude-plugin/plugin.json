@@ -8,5 +8,7 @@
     "url": "https://github.com/mrclrchtr"
   },
   "skills": "./skills",
-  "agents": "./agents"
+  "agents": [
+    "./agents/codex-reviewer.md"
+  ]
 }
