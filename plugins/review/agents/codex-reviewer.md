@@ -71,7 +71,30 @@ The plugin provides a launcher script at `${CLAUDE_PLUGIN_ROOT}/scripts/codex-re
 
 The script outputs `SESSION_NAME=...` and `REVIEW_OUTPUT=...` — capture these for later steps.
 
-**Custom prompt**: If the user provided specific focus areas **and** scope is `--uncommitted`, pass `--prompt "your custom prompt text"` or `--prompt-file /path/to/file`. Custom prompts are ignored for `--base` and `--commit` scopes (codex CLI limitation).
+**Custom prompt**: If the user provided specific focus areas **and** scope is `--uncommitted`, prefer `--prompt-file` for any multi-line prompt or any prompt containing Markdown, backticks, `$`, quotes, or code fences.
+
+Use inline `--prompt` only for short plain-text prompts with no shell-sensitive characters.
+
+When a prompt file is needed, create a temp file with a single-quoted heredoc so the content is passed literally:
+
+```bash
+PROMPT_FILE=$(mktemp /tmp/codex-review-prompt.XXXXXX)
+cat > "$PROMPT_FILE" <<'EOF'
+[your literal prompt here]
+EOF
+
+"${CLAUDE_PLUGIN_ROOT}/scripts/codex-review.sh" \
+  --scope "--uncommitted" \
+  --model gpt-5.4 \
+  --reasoning high \
+  --prompt-file "$PROMPT_FILE"
+```
+
+Reason: passing long Markdown prompts inline through Bash can corrupt the prompt via shell interpolation or command substitution.
+
+Custom prompts are ignored for `--base` and `--commit` scopes (codex CLI limitation).
+
+**Do NOT** pass a long Markdown prompt directly in a double-quoted shell argument.
 
 **Extra codex args**: Pass anything after `--` directly to codex (e.g., `-- --some-flag`).
 
